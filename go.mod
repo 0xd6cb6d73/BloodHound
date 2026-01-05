@@ -292,3 +292,5 @@ tool (
 	github.com/specterops/bloodhound/packages/go/stbernard
 	golang.org/x/tools/cmd/goimports
 )
+
+replace github.com/specterops/dawgs v0.3.1 => github.com/0xd6cb6d73/dawgs v0.3.1-test1
