@@ -38,38 +38,15 @@ services:
       retries: 5
       start_period: 30s
 
-  graph-db:
-    image: docker.io/library/neo4j:4.4.42
-    environment:
-      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_SECRET:-bloodhoundcommunityedition}
-      - NEO4J_dbms_allow__upgrade=${NEO4J_ALLOW_UPGRADE:-true}
-    # Database ports are disabled by default. Please change your database password to something secure before uncommenting
-    ports:
-      - 127.0.0.1:${NEO4J_DB_PORT:-7687}:7687
-      - 127.0.0.1:${NEO4J_WEB_PORT:-7474}:7474
-    volumes:
-      - ${NEO4J_DATA_MOUNT:-neo4j-data}:/data
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget -O /dev/null -q http://localhost:7474 || exit 1"
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 30s
-
   bloodhound:
-    image: docker.io/specterops/bloodhound:${BLOODHOUND_TAG:-latest}
+    image: docker.io/library/bloodhound:my
     environment:
       - bhe_disable_cypher_complexity_limit=${bhe_disable_cypher_complexity_limit:-false}
       - bhe_enable_cypher_mutations=${bhe_enable_cypher_mutations:-false}
       - bhe_graph_query_memory_limit=${bhe_graph_query_memory_limit:-2}
       - bhe_database_connection=user=${POSTGRES_USER:-bloodhound} password=${POSTGRES_PASSWORD:-bloodhoundcommunityedition} dbname=${POSTGRES_DB:-bloodhound} host=app-db
-      - bhe_neo4j_connection=neo4j://${NEO4J_USER:-neo4j}:${NEO4J_SECRET:-bloodhoundcommunityedition}@graph-db:7687/
       - bhe_recreate_default_admin=${bhe_recreate_default_admin:-false}
-      - bhe_graph_driver=${GRAPH_DRIVER:-neo4j}
+      - bhe_graph_driver=${GRAPH_DRIVER:-pg}
       ### Add additional environment variables you wish to use here.
       ### For common configuration options that you might want to use environment variables for, see `.env.example`
       ### example: bhe_database_connection=${bhe_database_connection}
@@ -84,8 +61,6 @@ services:
     #   - ./bloodhound.config.json:/bloodhound.config.json:ro
     depends_on:
       app-db:
-        condition: service_healthy
-      graph-db:
         condition: service_healthy
 
 volumes:
